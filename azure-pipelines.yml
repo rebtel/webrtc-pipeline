@@ -31,6 +31,8 @@ jobs:
 
     - script: |
          echo Building!
+         echo ${PWD}
+         ls
          ./tools_webrtc/android/build_aar.py
       displayName: 'Building'
 
