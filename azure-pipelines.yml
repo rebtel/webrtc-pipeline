@@ -17,6 +17,11 @@ jobs:
         echo Seeting up depot_tools
         git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
       displayName: 'Setup'
+    
+    - script: |
+        echo Install Python3
+        npm install --python=python3.6
+      displayName: 'Install Python3'
  
     - script: |
         echo Syncing sources
