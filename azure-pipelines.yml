@@ -31,7 +31,7 @@ jobs:
 
     - script: |
          echo Building!
-         tools_webrtc/android/build_aar.py
+         ./tools_webrtc/android/build_aar.py
       displayName: 'Building'
 
     - task: CopyFiles@2
