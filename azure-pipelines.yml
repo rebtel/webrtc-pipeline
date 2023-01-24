@@ -16,18 +16,15 @@ jobs:
     - script: |
         echo Seeting up depot_tools
         git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+        set -ex
+        echo $PATH
+        export PATH="${PWD}/depot_tools:$PATH"
+        echo $PATH
       displayName: 'Setup'
     
     - script: |
-        echo Install Python3
-        python3 --version
-        npm install python@3
-      displayName: 'Install Python3'
- 
-    - script: |
         echo Syncing sources
         set -ex
-        export PATH=$PATH:${PWD}/depot_tools
         fetch --nohooks webrtc_android
         gclient sync
         cd src 
