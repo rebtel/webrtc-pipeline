@@ -20,7 +20,8 @@ jobs:
     
     - script: |
         echo Install Python3
-        npm install --python=python3.6
+        python3 --version
+        npm install python@3
       displayName: 'Install Python3'
  
     - script: |
