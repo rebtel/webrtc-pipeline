@@ -33,7 +33,7 @@ jobs:
          set -ex
          export PATH=$PATH:${PWD}/depot_tools
          cd src
-         ./tools_webrtc/ios/build_ios_libs.py
+         ./tools_webrtc/ios/build_ios_libs.py --bitcode --arch arm64 x64 arm
       displayName: 'Building'
     - task: CopyFiles@2
       displayName: 'Copy output'
