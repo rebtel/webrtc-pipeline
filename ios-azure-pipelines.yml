@@ -26,7 +26,7 @@ jobs:
         gclient sync
         cd src 
         ./build/install-build-deps.sh
-        git checkout branch-heads/$(android_branch)
+        git checkout branch-heads/$(ios-branch)
       displayName: 'Sync sources'
     - script: |
          echo Building!
