@@ -2,7 +2,7 @@ variables:
   GIT_COMMIT: c2c150bdf3a30d669b0d975e82c0829011888fa3
 
 pool:
-  vmImage: 'macOS 12'
+  vmImage: 'macOS-12'
 
 jobs:
 - job: ios_build
