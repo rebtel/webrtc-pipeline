@@ -21,7 +21,7 @@ jobs:
     - script: |
         echo Syncing sources
         set -ex
-        export PATH=$PATH:${PWD}/depot_tools
+        export PATH=${PWD}/depot_tools:$PATH
         fetch --nohooks webrtc_ios
         gclient sync
         cd src 
