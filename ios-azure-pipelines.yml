@@ -37,7 +37,7 @@ jobs:
     - task: CopyFiles@2
       displayName: 'Copy output'
       inputs:
-        Contents: 'src/out_ios_libs/*.*'
+        Contents: 'src/out_ios_libs/'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
         CleanTargetFolder: true
     
