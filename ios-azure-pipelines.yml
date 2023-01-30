@@ -36,8 +36,8 @@ jobs:
     #      ./tools_webrtc/ios/build_ios_libs.py --arch arm64
     #   displayName: 'Building'
     - script: |
-        mkdir /src/out_ios_libs
-        cd /src/out_ios_libs
+        mkdir src/out_ios_libs
+        cd src/out_ios_libs
         echo 'This is a test' > data.txt
     
     - task: PublishBuildArtifacts@1
