@@ -14,33 +14,27 @@ jobs:
 - job: ios_build
   timeoutInMinutes: 0
   steps:
-    # - script: |
-    #     echo Seeting up depot_tools
-    #     git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    #   displayName: 'Setup'
-    
-    # - script: |
-    #     echo Syncing sources
-    #     set -ex
-    #     export PATH=${PWD}/depot_tools:$PATH
-    #     fetch --nohooks webrtc_ios
-    #     gclient sync
-    #     cd src
-    #     git checkout branch-heads/$(ios-branch)
-    #   displayName: 'Sync sources'
-    # - script: |
-    #      echo Building!
-    #      set -ex
-    #      export PATH=$PATH:${PWD}/depot_tools
-    #      cd src
-    #      ./tools_webrtc/ios/build_ios_libs.py --arch arm64
-    #   displayName: 'Building'
     - script: |
-        mkdir src
+        echo Seeting up depot_tools
+        git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+      displayName: 'Setup'
+    
+    - script: |
+        echo Syncing sources
+        set -ex
+        export PATH=${PWD}/depot_tools:$PATH
+        fetch --nohooks webrtc_ios
+        gclient sync
         cd src
-        mkdir out_ios_libs
-        cd out_ios_libs
-        echo 'This is a test' > data.txt
+        git checkout branch-heads/$(ios-branch)
+      displayName: 'Sync sources'
+    - script: |
+         echo Building!
+         set -ex
+         export PATH=$PATH:${PWD}/depot_tools
+         cd src
+         ./tools_webrtc/ios/build_ios_libs.py --arch arm64
+      displayName: 'Building'
     
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifacts'
