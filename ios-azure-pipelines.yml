@@ -1,74 +1,50 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
 variables:
-  GIT_COMMIT: c2c150bdf3a30d669b0d975e82c0829011888fa3
+  - group: webrtc
 
 pool:
-  vmImage: 'ubuntu-22.04'
+  vmImage: 'macos-12'
 
-jobs:
+jobs: 
 - job: ios_build
   timeoutInMinutes: 0
   steps:
-  - script: |
-      echo Setting up depot_tools
-      git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    displayName: Setup
-  - script: |
-      echo Syncing sources
-      set -ex
-      export PATH=$PATH:${PWD}/depot_tools
-      fetch --nohooks webrtc_ios
-      gclient sync
-      ( cd src; git checkout $(GIT_COMMIT) )
-      gclient sync -D
-      gclient runhooks
-    displayName: Sync sources
-  - script: |
-      echo Patching
-      set -ex
-      cd src
-      for file in ../patches/*; do
-        patch -p1 -i "$file"
-      done
-    displayName: Patching
-  - script: |
-      echo Building
-      set -ex
-      export PATH=$PATH:${PWD}/depot_tools
-      cd src
-      for arch in arm arm64 x64; do
-        gn gen out/ios_${arch} --args='target_os="ios" ios_enable_code_signing=false target_cpu="'"${arch}"'"'
-        ninja -C out/ios_${arch} socketrocket
-        ninja -C out/ios_${arch} rtc_sdk_objc
-        ninja -C out/ios_${arch} apprtc_common
-        ninja -C out/ios_${arch} apprtc_signaling
-      done
-    displayName: Building
-  - script: |
-      set -ex
-      mkdir -p tmp-output ${BUILD_ARTIFACTSTAGINGDIRECTORY}/libs ${BUILD_ARTIFACTSTAGINGDIRECTORY}/headers
-      for arch in arm arm64 x64; do
-        find src/out/ios_${arch} -name '*.a' | while read path; do
-          filename="$(basename $path)"
-          cp "$path" tmp-output/${filename%%.a}-${arch}.a
-          echo ${filename%%.a}
-        done
-      done | sort -u | egrep -v 'libprotobuf_full|libprotoc_lib|libyasm_utils' | while read fname; do
-        lipo -create tmp-output/${fname}-* -output ${BUILD_ARTIFACTSTAGINGDIRECTORY}/libs/${fname}.a
-      done
-      find src -name "*.h" -print | tar -c --files-from - | (cd ${BUILD_ARTIFACTSTAGINGDIRECTORY}/headers && tar -xvp)
-    displayName: Bundle
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: webrtc
-
-- job: ios_release
-  steps:
-  - task: UniversalPackages@0
-    displayName: Universal Publish
-    inputs:
-      command: publish
-      publishDirectory: '$(Build.ArtifactStagingDirectory)'
-      vstsFeedPublish: webrtc
-      vstsFeedPackagePublish: webrtc
-      packagePublishDescription: WebRTC iOS release
+    - script: |
+        echo Seeting up depot_tools
+        git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+      displayName: 'Setup'
+    
+    - script: |
+        echo Syncing sources
+        set -ex
+        export PATH=$PATH:${PWD}/depot_tools
+        fetch --nohooks webrtc_ios
+        gclient sync
+        cd src 
+        ./build/install-build-deps.sh
+        git checkout branch-heads/$(ios-branch)
+      displayName: 'Sync sources'
+    - script: |
+         echo Building!
+         set -ex
+         export PATH=$PATH:${PWD}/depot_tools
+         cd src
+         ./tools_webrtc/ios/build_ios_libs.py --arch arm64
+      displayName: 'Building'
+    - task: CopyFiles@2
+      displayName: 'Copy output'
+      inputs:
+        Contents: 'src/out_ios_libs/*.*'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        CleanTargetFolder: true
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifacts'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'WebRtc'
+        publishLocation: 'Container'
