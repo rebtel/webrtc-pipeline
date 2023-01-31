@@ -1,0 +1,44 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+trigger: none
+
+variables:
+  - group: webrtc
+
+pool:
+  vmImage: 'macos-12'
+
+jobs: 
+- job: ios_build
+  timeoutInMinutes: 0
+  steps:
+    - script: |
+        echo Seeting up depot_tools
+        git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+      displayName: 'Setup'
+    
+    - script: |
+        echo Syncing sources
+        set -ex
+        export PATH=${PWD}/depot_tools:$PATH
+        fetch --nohooks webrtc_ios
+        gclient sync
+        cd src
+        git checkout branch-heads/$(ios-branch)
+      displayName: 'Sync sources'
+    - script: |
+         echo Building!
+         set -ex
+         export PATH=$PATH:${PWD}/depot_tools
+         cd src
+         ./tools_webrtc/ios/build_ios_libs.py --arch arm64
+      displayName: 'Building'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifacts'
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/src/out_ios_libs/'
+        ArtifactName: 'WebRtc'
+        publishLocation: 'Container'
