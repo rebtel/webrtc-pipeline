@@ -33,7 +33,7 @@ jobs:
          set -ex
          export PATH=$PATH:${PWD}/depot_tools
          cd src
-         ./tools_webrtc/ios/build_ios_libs.py
+         ./tools_webrtc/ios/build_ios_libs.py --arch arm64
       displayName: 'Building'
     
     - task: PublishBuildArtifacts@1
