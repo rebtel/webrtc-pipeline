@@ -1,0 +1,44 @@
+# .github/workflows/build-webrtc.yml
+name: Build WebRTC AAR
+
+on:
+  workflow_dispatch:   # allows manual trigger
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout dummy repo
+      uses: actions/checkout@v3
+
+    - name: Install build dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3 git openjdk-11-jdk pkg-config libnss3 gnupg flex bison gperf build-essential zip curl zlib1g-dev
+
+    - name: Clone depot_tools
+      run: |
+        git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+        echo "$PWD/depot_tools" >> $GITHUB_PATH
+
+    - name: Fetch WebRTC Android source
+      run: |
+        mkdir webrtc && cd webrtc
+        fetch --nohooks webrtc_android
+        cd src
+        ./build/install-build-deps.sh
+        gclient sync
+
+    - name: Build libwebrtc.aar
+      run: |
+        cd webrtc/src
+        python3 tools_webrtc/android/build_aar.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: libwebrtc.aar
+        path: webrtc/src/libwebrtc.aar
