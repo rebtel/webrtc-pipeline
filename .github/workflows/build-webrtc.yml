@@ -38,7 +38,7 @@ jobs:
         python3 tools_webrtc/android/build_aar.py
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: libwebrtc.aar
         path: webrtc/src/libwebrtc.aar
