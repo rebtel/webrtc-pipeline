@@ -49,14 +49,14 @@ jobs:
 
     - name: Get WebRTC version
       id: get_version
+      working-directory: webrtc_android/src
       run: |
-        cd webrtc_android/src
         VERSION=$(python3 tools_webrtc/version/version.py | head -1)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Rename libwebrtc.aar with version
+      working-directory: webrtc_android/src
       run: |
-        cd webrtc_android/src
         mv libwebrtc.aar libwebrtc-${{ steps.get_version.outputs.version }}.aar
 
     - name: Upload built AAR
