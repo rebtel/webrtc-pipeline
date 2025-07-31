@@ -4,8 +4,6 @@ name: Build Android WebRTC
 on:
   # allows manual trigger
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build:
@@ -44,13 +42,25 @@ jobs:
         ./build/install-build-deps.sh
         gclient sync
 
-    - name: Build libwebrtc.aar
+    - name: Build WebRTC AAR
       run: |
         cd webrtc/src
         python3 tools_webrtc/android/build_aar.py
 
-    - name: Upload artifact
+    - name: Get WebRTC version
+      id: get_version
+      run: |
+        cd webrtc_android/src
+        VERSION=$(python3 tools_webrtc/version/version.py | head -1)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Rename libwebrtc.aar with version
+      run: |
+        cd webrtc_android/src
+        mv libwebrtc.aar libwebrtc-${{ steps.get_version.outputs.version }}.aar
+
+    - name: Upload built AAR
       uses: actions/upload-artifact@v4
       with:
-        name: libwebrtc.aar
-        path: webrtc/src/libwebrtc.aar
+        name: libwebrtc-${{ steps.get_version.outputs.version }}
+        path: webrtc_android/src/libwebrtc-${{ steps.get_version.outputs.version }}.aar
