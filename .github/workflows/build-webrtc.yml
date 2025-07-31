@@ -1,8 +1,9 @@
 # .github/workflows/build-webrtc.yml
-name: Build WebRTC AAR
+name: Build Android WebRTC
 
 on:
-  workflow_dispatch:   # allows manual trigger
+  # allows manual trigger
+  workflow_dispatch:
   push:
     branches: [ main ]
 
@@ -11,8 +12,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout dummy repo
+    - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Free disk space
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "/usr/local/lib/android"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        sudo rm -rf /opt/hostedtoolcache
+        sudo docker system prune -af || true
+        df -h
 
     - name: Install build dependencies
       run: |
