@@ -2,8 +2,15 @@
 name: Build Android WebRTC
 
 on:
-  # allows manual trigger
   workflow_dispatch:
+    inputs:
+      webrtc_branch:
+        description: 'WebRTC branch to build (e.g. branch-heads/5860 or main)'
+        required: true
+        default: 'main'
+        
+  push:
+    branches: [ main ]
 
 jobs:
   build:
@@ -42,25 +49,31 @@ jobs:
         ./build/install-build-deps.sh
         gclient sync
 
-    - name: Build WebRTC AAR
+    - name: Checkout selected WebRTC branch
+      run: |
+        cd webrtc/src
+        git fetch origin
+        git checkout "${{ github.event.inputs.webrtc_branch }}"
+        gclient sync
+
+    - name: Build libwebrtc.aar
       run: |
         cd webrtc/src
         python3 tools_webrtc/android/build_aar.py
 
-    - name: Get WebRTC version
-      id: get_version
-      working-directory: webrtc_android/src
+    - name: Rename AAR with version info
+      id: rename
       run: |
-        VERSION=$(python3 tools_webrtc/version/version.py | head -1)
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        cd webrtc/src
+        SHORT_HASH=$(git rev-parse --short HEAD)
+        BRANCH_SANITIZED=$(echo "${{ github.event.inputs.webrtc_branch }}" | sed 's|/|-|g')
+        NEW_NAME="libwebrtc-${BRANCH_SANITIZED}-${SHORT_HASH}.aar"
+        mv libwebrtc.aar "$NEW_NAME"
+        echo "artifact_name=libwebrtc-${BRANCH_SANITIZED}" >> $GITHUB_ENV
+        echo "aar_path=webrtc/src/$NEW_NAME" >> $GITHUB_ENV
 
-    - name: Rename libwebrtc.aar with version
-      working-directory: webrtc_android/src
-      run: |
-        mv libwebrtc.aar libwebrtc-${{ steps.get_version.outputs.version }}.aar
-
-    - name: Upload built AAR
+    - name: Upload AAR artifact
       uses: actions/upload-artifact@v4
       with:
-        name: libwebrtc-${{ steps.get_version.outputs.version }}
-        path: webrtc_android/src/libwebrtc-${{ steps.get_version.outputs.version }}.aar
+        name: ${{ env.artifact_name }}
+        path: ${{ env.aar_path }}
