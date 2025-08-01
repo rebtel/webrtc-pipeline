@@ -61,25 +61,19 @@ jobs:
         cd webrtc/src
         python3 tools_webrtc/android/build_aar.py
 
-    - name: Rename and upload artifact
+    - name: Rename AAR with version info
+      id: rename
       run: |
         cd webrtc/src
         SHORT_HASH=$(git rev-parse --short HEAD)
-        VERSION_TAG=$(echo "${{ github.event.inputs.webrtc_branch }}" | sed 's/\//-/g')
-        mv libwebrtc.aar libwebrtc-${VERSION_TAG}-${SHORT_HASH}.aar
-      shell: bash
-
-    - name: Upload artifact
-      env:
-        BRANCH_INPUT: ${{ github.event.inputs.webrtc_branch }}
-      run: |
-        BRANCH_SANITIZED=$(echo "$BRANCH_INPUT" | sed 's|/|-|g')
-        FILE=$(ls webrtc/src/libwebrtc-*.aar)
-        echo "Uploading $FILE as libwebrtc-${BRANCH_SANITIZED}"
+        BRANCH_SANITIZED=$(echo "${{ github.event.inputs.webrtc_branch }}" | sed 's|/|-|g')
+        NEW_NAME="libwebrtc-${BRANCH_SANITIZED}-${SHORT_HASH}.aar"
+        mv libwebrtc.aar "$NEW_NAME"
         echo "artifact_name=libwebrtc-${BRANCH_SANITIZED}" >> $GITHUB_ENV
-      shell: bash
+        echo "aar_path=webrtc/src/$NEW_NAME" >> $GITHUB_ENV
 
-    - uses: actions/upload-artifact@v4
+    - name: Upload AAR artifact
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.artifact_name }}
-        path: webrtc/src/libwebrtc-*.aar
+        path: ${{ env.aar_path }}
