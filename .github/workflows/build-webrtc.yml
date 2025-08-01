@@ -70,7 +70,16 @@ jobs:
       shell: bash
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      env:
+        BRANCH_INPUT: ${{ github.event.inputs.webrtc_branch }}
+      run: |
+        BRANCH_SANITIZED=$(echo "$BRANCH_INPUT" | sed 's|/|-|g')
+        FILE=$(ls webrtc/src/libwebrtc-*.aar)
+        echo "Uploading $FILE as libwebrtc-${BRANCH_SANITIZED}"
+        echo "artifact_name=libwebrtc-${BRANCH_SANITIZED}" >> $GITHUB_ENV
+      shell: bash
+
+    - uses: actions/upload-artifact@v4
       with:
-        name: libwebrtc-${{ github.event.inputs.webrtc_branch }}
+        name: ${{ env.artifact_name }}
         path: webrtc/src/libwebrtc-*.aar
